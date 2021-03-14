@@ -124,7 +124,26 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Queue
+    explored_set = set()
+    frontier = Queue()
+    frontier.push((problem.getStartState(), list()))
+    explored_set.add(problem.getStartState())
+
+    while True:
+        if frontier.isEmpty():
+            return []
+        current_node, current_solution = frontier.pop()
+        if problem.isGoalState(current_node):
+            return current_solution
+
+        for triple in problem.expand(current_node):
+            if triple[0] not in explored_set:
+                explored_set.add(triple[0])
+                solution = current_solution.copy()
+                solution.append(triple[1])
+                frontier.push((triple[0], solution))
+
 
 def nullHeuristic(state, problem=None):
     """
