@@ -152,10 +152,42 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+    explored_set = set()
+    node_info = dict()  # Store tuples consisting of the action sequence of a node and its backward cost
+    frontier = PriorityQueue()
+    start_state = problem.getStartState()
+    frontier.push(start_state, 0 + heuristic(start_state, problem))
+    explored_set.add(start_state)
+    node_info[start_state] = (list(), 0)
+
+    while True:
+        if frontier.isEmpty():
+            return []
+        current_node = frontier.pop()
+        current_solution, current_path_cost = node_info[current_node]
+        if problem.isGoalState(current_node):
+            return current_solution
+        # print(current_node)
+        # print('Explored:', explored_set)
+
+        for triple in problem.expand(current_node):
+            solution = current_solution.copy()
+            solution.append(triple[1])
+            path_cost = current_path_cost + triple[2]
+            priority = path_cost + heuristic(triple[0], problem)
+
+            if triple[0] not in explored_set:
+                explored_set.add(triple[0])
+                frontier.push(triple[0], priority)
+            else:
+                frontier.update(triple[0], priority)
+            node_info[triple[0]] = (solution, path_cost)
+
 
 # Abbreviations
 bfs = breadthFirstSearch
