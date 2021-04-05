@@ -158,20 +158,24 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     "*** YOUR CODE HERE ***"
     from util import PriorityQueue
     explored_set = set()
+    frontier_set = set()  # Track every node that is currently in frontier
     node_info = dict()  # Store tuples consisting of the action sequence of a node and its backward cost
     frontier = PriorityQueue()
+
     start_state = problem.getStartState()
     frontier.push(start_state, 0 + heuristic(start_state, problem))
-    explored_set.add(start_state)
+    frontier_set.add(start_state)
     node_info[start_state] = (list(), 0)
 
     while True:
         if frontier.isEmpty():
             return []
         current_node = frontier.pop()
+        frontier_set.remove(current_node)
         current_solution, current_path_cost = node_info[current_node]
         if problem.isGoalState(current_node):
             return current_solution
+        explored_set.add(current_node)
         # print(current_node)
         # print('Explored:', explored_set)
 
@@ -181,12 +185,16 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             path_cost = current_path_cost + triple[2]
             priority = path_cost + heuristic(triple[0], problem)
 
-            if triple[0] not in explored_set:
-                explored_set.add(triple[0])
-                frontier.push(triple[0], priority)
-            else:
-                frontier.update(triple[0], priority)
-            node_info[triple[0]] = (solution, path_cost)
+            new_child = triple[0]
+            if new_child not in explored_set and new_child not in frontier_set:
+                frontier.push(new_child, priority)
+                frontier_set.add(new_child)
+                node_info[new_child] = (solution, path_cost)
+            elif new_child in frontier_set:
+                frontier.update(new_child, priority)
+                _, old_path_cost = node_info[new_child]
+                if path_cost < old_path_cost:
+                    node_info[new_child] = (solution, path_cost)
 
 
 # Abbreviations

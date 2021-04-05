@@ -70,7 +70,43 @@ class MinimaxAgent(MultiAgentSearchAgent):
         limits your minimax tree depth (note that depth increases one means
         the pacman and all ghosts has already decide their actions)
         """
-        util.raiseNotDefined()
+        action, _ = self.maxValue(0, gameState)
+        return action
+
+    def maxValue(self, current_depth, state):
+        if current_depth == self.depth or state.isWin() or state.isLose():
+            return None, self.evaluationFunction(state)
+
+        max_value = -10000000
+        legal_actions = state.getLegalActions(0)
+        max_action = None
+
+        for action in legal_actions:
+            value = self.minValue(current_depth, state.generateChild(0, action), 1)
+            if value > max_value:
+                max_value = value
+                max_action = action
+
+        return max_action, max_value
+
+    def minValue(self, current_depth, state, agent_idx):
+        if state.isWin() or state.isLose():
+            return self.evaluationFunction(state)
+
+        min_value = 10000000
+        legal_actions = state.getLegalActions(agent_idx)
+        last_monster = True if agent_idx == state.getNumAgents() - 1 else False
+
+        for action in legal_actions:
+            if last_monster:
+                _, value = self.maxValue(current_depth+1, state.generateChild(agent_idx, action))
+            else:
+                value = self.minValue(current_depth, state.generateChild(agent_idx, action), agent_idx+1)
+            if value < min_value:
+                min_value = value
+
+        return min_value
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -81,5 +117,47 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        action, _ = self.maxValue(0, gameState, -10000000, 10000000)
+        return action
+
+    def maxValue(self, current_depth, state, alpha, beta):
+        if current_depth == self.depth or state.isWin() or state.isLose():
+            return None, self.evaluationFunction(state)
+
+        max_value = -10000000
+        legal_actions = state.getLegalActions(0)
+        max_action = None
+
+        for action in legal_actions:
+            value = self.minValue(current_depth, state.generateChild(0, action), 1, alpha, beta)
+            if value > max_value:
+                max_value = value
+                max_action = action
+            if max_value > beta:
+                return max_action, max_value
+
+            alpha = max_value if max_value > alpha else alpha
+
+        return max_action, max_value
+
+    def minValue(self, current_depth, state, agent_idx, alpha, beta):
+        if state.isWin() or state.isLose():
+            return self.evaluationFunction(state)
+
+        min_value = 10000000
+        legal_actions = state.getLegalActions(agent_idx)
+        last_monster = True if agent_idx == state.getNumAgents() - 1 else False
+
+        for action in legal_actions:
+            if last_monster:
+                _, value = self.maxValue(current_depth+1, state.generateChild(agent_idx, action), alpha, beta)
+            else:
+                value = self.minValue(current_depth, state.generateChild(agent_idx, action), agent_idx+1, alpha, beta)
+            if value < min_value:
+                min_value = value
+            if min_value < alpha:
+                return min_value
+
+            beta = min_value if min_value < beta else beta
+
+        return min_value

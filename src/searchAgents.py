@@ -321,11 +321,13 @@ class FoodSearchProblem:
             cost += 1
         return cost
 
+
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
+
 
 def foodHeuristic(state, problem):
     """
@@ -356,5 +358,27 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    food_list = foodGrid.asList()
+
+    if len(food_list) == 0:
+        return 0
+    elif len(food_list) == 1:
+        return util.manhattanDistance(position, food_list[0])
+
+    max_distance = 0
+    most_distant_food_pair = ((0, 0), (0, 0))
+    for food1 in food_list:
+        for food2 in food_list:
+            if food1 == food2:
+                continue
+            else:
+                dist = util.manhattanDistance(food1, food2)
+                if max_distance < dist:
+                    max_distance = dist
+                    most_distant_food_pair = (food1, food2)
+
+    dist1 = util.manhattanDistance(position, most_distant_food_pair[0])
+    dist2 = util.manhattanDistance(position, most_distant_food_pair[1])
+    priority = max_distance + min(dist1, dist2)
+
+    return priority
